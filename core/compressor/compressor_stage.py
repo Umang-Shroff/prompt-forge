@@ -4,7 +4,7 @@ from core.stage import Stage
 from core.compressor.budget import CompressionBudget
 from core.compressor.context import CompressionContext
 from core.compressor.registry import CompressionRegistry
-
+from .default_registry import create_default_registry
 from engines.compression.no_compression_engine import NoCompressionEngine
 from engines.compression.policy import PolicyFactory
 
@@ -32,7 +32,7 @@ class CompressorStage(Stage):
         registry: CompressionRegistry | None = None,
     ) -> None:
 
-        self._registry = registry or CompressionRegistry()
+        self._registry = registry or create_default_registry()
 
         if not self._registry.engines:
             self._registry.register(
@@ -47,6 +47,7 @@ class CompressorStage(Stage):
         # ----------------------------------
         # Build compression budget
         # ----------------------------------
+            
 
         original_tokens = prompt.tokens.original_tokens
 
@@ -91,6 +92,10 @@ class CompressorStage(Stage):
         active_engine = None
 
         for engine in self._registry.engines:
+            print("\nRegistered compression engines:")
+
+            for e in self._registry.engines:
+                print(" -", e.__class__.__name__)
 
             active_engine = engine
 

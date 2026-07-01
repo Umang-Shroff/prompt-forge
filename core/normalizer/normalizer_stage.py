@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from PromptOptimizer.core.normalizer import normalizer
 from core.stage import Stage
 
 from models import PromptData

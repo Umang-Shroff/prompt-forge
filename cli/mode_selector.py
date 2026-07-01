@@ -8,46 +8,42 @@ from models import OptimizationMode
 class ModeSelector:
     """
     Interactive optimization mode selector.
-
-    Uses arrow keys for navigation and Enter to confirm.
     """
 
-    _CHOICES = [
-        questionary.Choice(
-            title="Conservative",
-            value=OptimizationMode.CONSERVATIVE,
-        ),
-        questionary.Choice(
-            title="Balanced",
-            value=OptimizationMode.BALANCED,
-        ),
-        questionary.Choice(
-            title="Aggressive",
-            value=OptimizationMode.AGGRESSIVE,
-        ),
-    ]
+    def __init__(self) -> None:
+
+        self._choices = {
+            OptimizationMode.CONSERVATIVE: questionary.Choice(
+                title="Conservative",
+                value=OptimizationMode.CONSERVATIVE,
+            ),
+            OptimizationMode.BALANCED: questionary.Choice(
+                title="Balanced",
+                value=OptimizationMode.BALANCED,
+            ),
+            OptimizationMode.AGGRESSIVE: questionary.Choice(
+                title="Aggressive",
+                value=OptimizationMode.AGGRESSIVE,
+            ),
+        }
 
     def select(
         self,
         default: OptimizationMode,
     ) -> OptimizationMode:
-        """
-        Display the optimization mode selector.
 
-        Parameters
-        ----------
-        default:
-            Previously selected mode.
-
-        Returns
-        -------
-        OptimizationMode
-        """
+        ordered_choices = [
+            self._choices[default],
+            *[
+                choice
+                for mode, choice in self._choices.items()
+                if mode != default
+            ],
+        ]
 
         result = questionary.select(
             "Select Optimization Mode",
-            choices=self._CHOICES,
-            default=default.name.capitalize(),
+            choices=ordered_choices,
             use_indicator=True,
         ).ask()
 

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 import re
-
-from PromptOptimizer.core.analyzer.config import MARKDOWN_MATCH_WEIGHT, MIN_MARKDOWN_CONFIDENCE, MAX_CONFIDENCE
+from .config import MARKDOWN_MATCH_WEIGHT, MIN_MARKDOWN_CONFIDENCE, MAX_CONFIDENCE
 from models import PromptData
 from .patterns import MARKDOWN_PATTERNS
 from .detector import Detector

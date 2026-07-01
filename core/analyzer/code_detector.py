@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from PromptOptimizer.core.analyzer.config import CODE_MATCH_WEIGHT, MAX_CONFIDENCE, MIN_CODE_CONFIDENCE
+from .config import CODE_MATCH_WEIGHT, MAX_CONFIDENCE, MIN_CODE_CONFIDENCE
 from models import PromptData
 
 from .detector import Detector
