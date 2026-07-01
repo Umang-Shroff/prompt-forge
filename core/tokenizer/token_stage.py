@@ -1,26 +1,47 @@
 from __future__ import annotations
 
 from core.stage import Stage
-from models import PromptData
 
-from .token_counter import TokenCounter
+from models import (
+    CompressionConfig,
+    PromptData,
+)
+
+from .token_counter_cache import TokenCounterCache
 
 
 class TokenCounterStage(Stage):
     """
-    Computes token statistics for prompt.
+    Computes token statistics for the prompt.
+
+    The original prompt is tokenized only once, while the
+    current prompt is tokenized on every execution so the
+    latest optimization statistics are always available.
     """
 
     def __init__(self) -> None:
-        self.counter = TokenCounter()
 
-    def execute(self, prompt: PromptData) -> PromptData:
+        self.counter = TokenCounterCache.get(
+            CompressionConfig(),
+        )
 
-        original = prompt.original_prompt
-        current = prompt.current_prompt
+    def execute(
+        self,
+        prompt: PromptData,
+    ) -> PromptData:
 
-        prompt.tokens.original_tokens = self.counter.count(original)
-        prompt.tokens.optimized_tokens = self.counter.count(current)
+        # Count the original prompt only once.
+        if prompt.tokens.original_tokens == 0:
+
+            prompt.tokens.original_tokens = self.counter.count(
+                prompt.original_prompt,
+            )
+
+        # Always recount the current prompt since it may have
+        # changed after optimization or compression.
+        prompt.tokens.optimized_tokens = self.counter.count(
+            prompt.current_prompt,
+        )
 
         prompt.tokens.update()
 

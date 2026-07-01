@@ -14,6 +14,7 @@ from .chunker import PromptChunker
 from .engine import CompressionEngine
 from .extractor import CompressionResultExtractor
 from .loader import CompressorLoader
+from .compressor_cache import CompressorCache
 from .policy import CompressionPolicy
 from .scorer import ImportanceScorer
 
@@ -39,10 +40,6 @@ class LongLLMLinguaEngine(CompressionEngine):
 
         self._config = config or CompressionConfig()
 
-        self._loader = CompressorLoader(
-            self._config,
-        )
-
         self._builder = CompressionRequestBuilder()
 
         self._extractor = CompressionResultExtractor()
@@ -56,16 +53,15 @@ class LongLLMLinguaEngine(CompressionEngine):
 
     def _load_compressor(self) -> Any:
         """
-        Lazily initialize PromptCompressor.
-
-        The HuggingFace model is loaded only when
-        compression is actually requested.
+        Lazily retrieve the shared PromptCompressor instance.
         """
-
+    
         if self._compressor is None:
-
-            self._compressor = self._loader.load()
-
+        
+            self._compressor = CompressorCache.get(
+                self._config,
+            )
+    
         return self._compressor
     
 

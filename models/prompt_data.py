@@ -236,6 +236,57 @@ class PromptData:
             return 0.0
         return self.tokens.reduction_percentage
     
+    @property
+    def reduction_percentage(self) -> float:
+        if self.tokens.original_tokens == 0:
+            return 0.0
+    
+        return self.tokens.reduction_percentage
+    
+    @property
+    def tokens_saved(self) -> int:
+        """
+        Number of tokens removed by optimization.
+        """
+
+        return max(
+            0,
+            self.tokens.original_tokens
+            - self.tokens.optimized_tokens,
+        )
+
+    @property
+    def compression_applied(self) -> bool:
+        """
+        Whether the optimization actually reduced the prompt.
+        """
+
+        return self.tokens_saved > 0
+
+    @property
+    def compression_engine(self) -> str:
+        """
+        Name of the compression engine used.
+        """
+
+        return str(self.compression.engine)
+
+    @property
+    def original_tokens(self) -> int:
+        """
+        Original prompt token count.
+        """
+
+        return self.tokens.original_tokens
+
+    @property
+    def optimized_tokens(self) -> int:
+        """
+        Optimized prompt token count.
+        """
+
+        return self.tokens.optimized_tokens
+    
     analysis: AnalysisResult = field(default_factory=AnalysisResult)
     
     # ------------------------------------------------------
