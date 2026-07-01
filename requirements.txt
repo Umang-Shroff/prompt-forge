@@ -1,0 +1,6 @@
+click
+tqdm
+transformers
+torch
+tiktoken
+rich
