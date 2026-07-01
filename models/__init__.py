@@ -4,6 +4,7 @@ from .enums import (
     PromptType,
     ValidationStatus,
 )
+from .optimization_context import OptimizationContext
 from .normalization_report import NormalizationReport
 from .metadata import Metadata
 from .normalization_context import NormalizationContext
@@ -28,4 +29,5 @@ __all__ = [
     "Diagnostics",
     "NormalizationContext",
     "NormalizationReport",
+    "OptimizationContext",
 ]

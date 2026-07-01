@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-
+from .optimization_report import OptimizationReport
 from .enums import (
     CompressionEngine,
     OptimizationMode,
@@ -224,6 +224,10 @@ class PromptData:
         default_factory=NormalizationReport
     )
 
+    optimization: OptimizationReport = field(
+        default_factory=OptimizationReport
+    )
+    
     tokens: TokenStats = field(default_factory=TokenStats)
 
     compression: CompressionResult = field(
