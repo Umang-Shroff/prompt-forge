@@ -14,6 +14,3 @@ Thumbs.db
 
 # VS Code
 .vscode/
-
-# model cache (optional)
-models/
