@@ -8,7 +8,7 @@ from .enums import (
     PromptType,
 )
 from .metadata import Metadata
-
+from .normalization_report import NormalizationReport
 
 # ==========================================================
 # Analysis Result
@@ -215,6 +215,14 @@ class PromptData:
     # ------------------------------------------------------
 
     analysis: AnalysisResult = field(default_factory=AnalysisResult)
+    
+    # ------------------------------------------------------
+    # Normalization
+    # ------------------------------------------------------
+
+    normalization: NormalizationReport = field(
+        default_factory=NormalizationReport
+    )
 
     tokens: TokenStats = field(default_factory=TokenStats)
 
