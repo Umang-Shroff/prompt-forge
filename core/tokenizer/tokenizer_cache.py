@@ -18,28 +18,14 @@ class TokenizerCache:
 
     _cache: dict[tuple, PreTrainedTokenizerBase] = {}
 
-    @staticmethod
-    def _make_key(
-        config: CompressionConfig,
-    ) -> tuple:
-        """
-        Build a cache key from every configuration value that
-        affects tokenizer loading.
-        """
-
-        return (
-            config.model_name,
-            config.cache_dir,
-            config.use_llmlingua2,
-        )
-
+    
     @classmethod
     def get(
         cls,
         config: CompressionConfig,
     ) -> PreTrainedTokenizerBase:
 
-        key = cls._make_key(config)
+        key = config.cache_key
 
         if key not in cls._cache:
 
