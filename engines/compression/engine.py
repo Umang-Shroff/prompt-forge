@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 
 from models import PromptData
 
+from engines.compression.policy import CompressionPolicy
+
 from core.compressor.context import CompressionContext
 
 class CompressionEngine(ABC):
@@ -20,6 +22,7 @@ class CompressionEngine(ABC):
         self,
         text: str,
         prompt: PromptData,
-        context: CompressionContext | None = None,
+        context: CompressionContext,
+        policy: CompressionPolicy,
     ) -> str:
         raise NotImplementedError
