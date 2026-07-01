@@ -10,6 +10,8 @@ from .enums import (
 from .metadata import Metadata
 from .normalization_report import NormalizationReport
 
+from dataclasses import dataclass
+
 # ==========================================================
 # Analysis Result
 # ==========================================================
@@ -129,12 +131,27 @@ class TokenStats:
     """
 
     original_tokens: int = 0
-
     optimized_tokens: int = 0
 
     tokens_saved: int = 0
-
     reduction_percentage: float = 0.0
+
+    def update(self) -> None:
+        """
+        Recalculate derived metrics.
+        """
+
+        self.tokens_saved = max(
+            0,
+            self.original_tokens - self.optimized_tokens,
+        )
+
+        if self.original_tokens > 0:
+            self.reduction_percentage = (
+                self.tokens_saved / self.original_tokens
+            ) * 100
+        else:
+            self.reduction_percentage = 0.0
 
 
 # ==========================================================
@@ -148,7 +165,7 @@ class CompressionResult:
     Stores compression-related information.
     """
 
-    engine: CompressionEngine = CompressionEngine.NONE
+    engine: str = "None"
 
     compression_ratio: float = 0.0
 
@@ -213,7 +230,12 @@ class PromptData:
     # ------------------------------------------------------
     # Pipeline Results
     # ------------------------------------------------------
-
+    @property
+    def compression_ratio(self) -> float:
+        if self.tokens.original_tokens == 0:
+            return 0.0
+        return self.tokens.reduction_percentage
+    
     analysis: AnalysisResult = field(default_factory=AnalysisResult)
     
     # ------------------------------------------------------
