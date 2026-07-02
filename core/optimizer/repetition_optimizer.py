@@ -1,14 +1,23 @@
 from __future__ import annotations
 
+import re
+
 from models import OptimizationContext
 
 from .optimizer import Optimizer
+from .optimizer_type import OptimizerType
 
 
 class RepetitionOptimizer(Optimizer):
     """
     Removes repeated lines while preserving order.
     """
+
+    @property
+    def optimizer_type(
+        self,
+    ) -> OptimizerType:
+        return OptimizerType.REPETITION
 
     @property
     def priority(self) -> int:
@@ -20,7 +29,16 @@ class RepetitionOptimizer(Optimizer):
         context: OptimizationContext,
     ) -> str:
 
-        if context.is_code:
+        if (
+            context.is_structured
+            or context.contains_code
+        ):
+            return text
+
+        if self.is_protected(
+            text,
+            context,
+        ):
             return text
 
         seen: set[str] = set()
@@ -32,18 +50,34 @@ class RepetitionOptimizer(Optimizer):
             normalized = line.strip()
 
             if not normalized:
-
                 result.append(line)
-
                 continue
 
-            key = normalized.casefold()
+            key = re.sub(
+                r"\s+",
+                " ",
+                normalized.casefold(),
+            )
 
             if key in seen:
+
+                if context.is_conservative:
+                    result.append(line)
+
                 continue
 
             seen.add(key)
 
             result.append(line)
 
-        return "\n".join(result)
+        optimized = "\n".join(result)
+
+        if context.needs_aggressive_optimization:
+
+            optimized = re.sub(
+                r"\n{3,}",
+                "\n\n",
+                optimized,
+            )
+
+        return optimized.strip()

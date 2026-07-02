@@ -128,7 +128,47 @@ class LongLLMLinguaEngine(CompressionEngine):
 
         return chunks
     
+    def _order_chunks(
+        self,
+        chunks: list[str],
+        scores: list[float],
+    ) -> tuple[list[str], list[float]]:
+        """
+        Order chunks by descending importance.
+        """
 
+        ordered = sorted(
+            zip(
+                chunks,
+                scores,
+            ),
+            key=lambda item: item[1],
+            reverse=True,
+        )
+
+        return (
+            [c for c, _ in ordered],
+            [s for _, s in ordered],
+        )
+
+
+    def _build_compression_flags(
+        self,
+        scores: list[float],
+    ) -> list[bool]:
+        """
+        Decide which chunks may be compressed.
+        """
+
+        if not scores:
+            return []
+
+        average = sum(scores) / len(scores)
+
+        return [
+            score < average
+            for score in scores
+        ]
     
     
 
@@ -235,12 +275,16 @@ class LongLLMLinguaEngine(CompressionEngine):
                 chunks=chunks,
                 prompt=prompt,
             )
-            
-            ordered_chunks, scores = reorder_chunks(
+
+            ordered_chunks, ordered_scores = self._order_chunks(
                 chunks,
                 scores,
             )
             
+            compress_flags = self._build_compression_flags(
+                ordered_scores,
+            )
+
             compress_flags = [
                 score < 0.80
                 for score in scores
@@ -257,7 +301,7 @@ class LongLLMLinguaEngine(CompressionEngine):
                 profile=profile,
                 chunks=ordered_chunks,
                 compress_flags=compress_flags,
-                scores=scores,
+                scores=ordered_scores,
             )
 
             # ---------------------------------

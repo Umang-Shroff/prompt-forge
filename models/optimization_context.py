@@ -6,16 +6,27 @@ from .enums import (
     OptimizationMode,
     PromptType,
 )
+from .intent_result import IntentResult
 from .normalization_report import NormalizationReport
-from .prompt_data import AnalysisResult
 from .optimization_hints import OptimizationHints
+from .prompt_data import AnalysisResult
+from .quality_score import QualityScore
+
+
+# TYPE_CHECKING avoids a circular dependency because
+# OptimizationPlan lives under core/.
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.optimizer.optimization_plan import OptimizationPlan
+
 
 @dataclass(slots=True, frozen=True)
 class OptimizationContext:
     """
     Read-only context supplied to every optimizer.
 
-    It exposes only the information required for semantic
+    It exposes all information required for semantic
     optimization while keeping PromptData encapsulated.
     """
 
@@ -23,9 +34,15 @@ class OptimizationContext:
 
     analysis: AnalysisResult
 
+    intent: IntentResult
+
+    quality: QualityScore
+
     normalization: NormalizationReport
 
     optimization_hints: OptimizationHints
+
+    plan: "OptimizationPlan"
 
     # ======================================================
     # Optimization Mode
@@ -101,9 +118,6 @@ class OptimizationContext:
 
     @property
     def languages(self) -> tuple[str, ...]:
-        """
-        Detected programming languages.
-        """
         return tuple(self.analysis.detected_languages)
 
     @property
@@ -129,3 +143,31 @@ class OptimizationContext:
     @property
     def contains_logs(self) -> bool:
         return self.analysis.contains_logs
+
+    # ======================================================
+    # Intent Shortcuts
+    # ======================================================
+
+    @property
+    def primary_intent(self):
+        return self.intent.primary
+
+    @property
+    def intent_confidence(self) -> float:
+        return self.intent.confidence
+
+    # ======================================================
+    # Quality Shortcuts
+    # ======================================================
+
+    @property
+    def quality_score(self) -> float:
+        return self.quality.overall
+
+    @property
+    def needs_aggressive_optimization(self) -> bool:
+        return (
+            self.is_aggressive
+            or self.quality.overall < 70
+            or self.plan.aggressive
+        )

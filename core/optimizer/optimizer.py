@@ -1,8 +1,10 @@
 from __future__ import annotations
-import re
+
 from abc import ABC, abstractmethod
 
 from models import OptimizationContext
+
+from .optimizer_type import OptimizerType
 
 
 class Optimizer(ABC):
@@ -21,7 +23,20 @@ class Optimizer(ABC):
     @property
     def enabled(self) -> bool:
         return True
-    
+
+    @property
+    @abstractmethod
+    def optimizer_type(
+        self,
+    ) -> OptimizerType:
+        """
+        Returns the category of optimizer.
+
+        This allows OptimizerStage to make decisions without
+        relying on fragile class names.
+        """
+        raise NotImplementedError
+
     def is_protected(
         self,
         text: str,
@@ -49,4 +64,7 @@ class Optimizer(ABC):
         text: str,
         context: OptimizationContext,
     ) -> str:
+        """
+        Optimize the supplied text.
+        """
         raise NotImplementedError

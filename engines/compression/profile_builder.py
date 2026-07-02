@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from models import PromptData
-
 from .compression_profile import CompressionProfile
 
 
@@ -15,6 +14,8 @@ class CompressionProfileBuilder:
         prompt: PromptData,
     ) -> CompressionProfile:
 
+        intent = prompt.intent
+        quality = prompt.quality.overall
         mode = prompt.mode
         tokens = prompt.tokens.original_tokens
         analysis = prompt.analysis
@@ -37,6 +38,11 @@ class CompressionProfileBuilder:
         preserve_structure = False
         preserve_lists = False
         preserve_code = False
+        preserve_examples = False
+        preserve_reasoning = False
+        preserve_roles = False
+        preserve_instructions = False
+        aggressive_filtering = False
 
         # ----------------------------------
         # Adaptive Rules
@@ -77,8 +83,51 @@ class CompressionProfileBuilder:
 
             preserve_lists = True
 
+        
+        # Preserve role prompts.
+
+        if (
+            intent.primary is not None
+            and intent.primary.name == "ROLE"
+        ):
+            preserve_roles = True
+
+        # Preserve explanations.
+
+        if (
+            intent.primary is not None
+            and intent.primary.name == "EXPLAIN"
+        ):
+            preserve_reasoning = True
+
+        # Preserve planning prompts.
+
+        if (
+            intent.primary is not None
+            and intent.primary.name == "PLAN"
+        ):
+            preserve_lists = True
+
+        # Preserve debugging context.
+
+        if (
+            intent.primary is not None
+            and intent.primary.name == "DEBUG"
+        ):
+            preserve_examples = True
+
         # Large prompts benefit from stronger compression.
         if tokens > 2000:
+
+            if quality < 60:
+
+                ratio *= 0.85
+
+                aggressive_filtering = True
+
+            elif quality > 90:
+            
+                ratio *= 1.05
 
             ratio *= 0.80
 
@@ -98,6 +147,7 @@ class CompressionProfileBuilder:
         return CompressionProfile(
             enabled=enabled,
             target_ratio=ratio,
+            reorder_context="original",
             force_tokens=sorted(
                 prompt.optimization_hints.preferred_keywords,
             ),
@@ -107,4 +157,9 @@ class CompressionProfileBuilder:
             preserve_structure=preserve_structure,
             preserve_lists=preserve_lists,
             preserve_code=preserve_code,
+            preserve_examples=preserve_examples,
+            preserve_reasoning=preserve_reasoning,
+            preserve_roles=preserve_roles,
+            preserve_instructions=preserve_instructions,
+            aggressive_filtering=aggressive_filtering,
         )

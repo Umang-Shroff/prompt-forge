@@ -2,19 +2,24 @@ from __future__ import annotations
 
 import re
 
-from models import (
-    OptimizationContext,
-    OptimizationMode,
-)
+from models import OptimizationContext
 
-from .regex_optimizer import RegexOptimizer
+from .optimizer_type import OptimizerType
 from .patterns import FILLER_PATTERNS
+from .regex_optimizer import RegexOptimizer
 
 
 class FillerOptimizer(RegexOptimizer):
     """
-    Removes conversational filler phrases.
+    Removes conversational filler phrases while adapting
+    to prompt quality and optimization mode.
     """
+
+    @property
+    def optimizer_type(
+        self,
+    ) -> OptimizerType:
+        return OptimizerType.FILLER
 
     @property
     def priority(self) -> int:
@@ -25,28 +30,75 @@ class FillerOptimizer(RegexOptimizer):
         text: str,
         context: OptimizationContext,
     ) -> str:
-    
-        if context.is_structured:
+
+        # -----------------------------------------
+        # Never modify structured or code prompts.
+        # -----------------------------------------
+
+        if (
+            context.is_structured
+            or context.contains_code
+        ):
             return text
-    
-        patterns = dict(FILLER_PATTERNS)
-    
-        if context.mode == OptimizationMode.CONSERVATIVE:
+
+        # -----------------------------------------
+        # If the entire text contains protected
+        # terms, leave it untouched.
+        # -----------------------------------------
+
+        if self.is_protected(
+            text,
+            context,
+        ):
+            return text
+
+        patterns = dict(
+            FILLER_PATTERNS,
+        )
+
+        # -----------------------------------------
+        # Conservative mode keeps more natural
+        # language.
+        # -----------------------------------------
+
+        if context.is_conservative:
+
             patterns.pop(
                 r"\bi would like you to\b",
                 None,
             )
-    
-        keywords = context.optimization_hints.preferred_keywords
-    
-        for keyword in keywords:
-        
-            if keyword.lower() in text.lower():
-                patterns.pop(
-                    rf"\b{re.escape(keyword)}\b",
-                    None,
-                )
-    
+
+            patterns.pop(
+                r"\bplease\b",
+                None,
+            )
+
+        # -----------------------------------------
+        # High-quality prompts receive minimal
+        # cleanup even in balanced mode.
+        # -----------------------------------------
+
+        elif (
+            context.is_balanced
+            and context.quality_score >= 85
+        ):
+
+            patterns.pop(
+                r"\bi would like you to\b",
+                None,
+            )
+
+        # -----------------------------------------
+        # Preserve preferred keywords.
+        # -----------------------------------------
+
+        for keyword in context.optimization_hints.preferred_keywords:
+
+            patterns.pop(
+                rf"\b{re.escape(keyword)}\b",
+                None,
+            )
+
         return self.apply_patterns(
             text,
             patterns,

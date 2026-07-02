@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-import re
+from models import OptimizationContext
 
+from .optimizer_type import OptimizerType
 from .regex_optimizer import RegexOptimizer
-from models import (
-    OptimizationContext,
-    OptimizationMode,
-)
-
-from .optimizer import Optimizer
 from .patterns import SENTENCE_PATTERNS
 
 
 class SentenceOptimizer(RegexOptimizer):
     """
-    Shortens verbose sentence constructions.
+    Simplifies verbose sentence constructions.
     """
+
+    @property
+    def optimizer_type(
+        self,
+    ) -> OptimizerType:
+        return OptimizerType.SENTENCE
 
     @property
     def priority(self) -> int:
@@ -27,12 +28,38 @@ class SentenceOptimizer(RegexOptimizer):
         context: OptimizationContext,
     ) -> str:
 
-        if context.is_structured:
+        if (
+            context.is_structured
+            or context.contains_code
+        ):
             return text
 
-        patterns = dict(SENTENCE_PATTERNS)
+        if self.is_protected(
+            text,
+            context,
+        ):
+            return text
 
-        if context.mode == OptimizationMode.CONSERVATIVE:
+        patterns = dict(
+            SENTENCE_PATTERNS,
+        )
+
+        if context.is_conservative:
+
+            patterns.pop(
+                r"\bdue to the fact that\b",
+                None,
+            )
+
+            patterns.pop(
+                r"\bin order to\b",
+                None,
+            )
+
+        elif (
+            context.is_balanced
+            and context.quality_score >= 85
+        ):
 
             patterns.pop(
                 r"\bdue to the fact that\b",
@@ -42,4 +69,6 @@ class SentenceOptimizer(RegexOptimizer):
         return self.apply_patterns(
             text,
             patterns,
+            context.optimization_hints.preserve_terms,
+            context.optimization_hints.protected_phrases,
         )

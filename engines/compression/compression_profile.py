@@ -16,18 +16,24 @@ class CompressionProfile:
 
     reorder_context: str = "original"
 
-    force_tokens: list[str] = field(
-        default_factory=list,
-    )
-
-    force_reserve: list[str] = field(
-        default_factory=list,
-    )
-
     rank_method: str = "longllmlingua"
+
+    force_tokens: list[str] = field(default_factory=list)
+
+    force_reserve: list[str] = field(default_factory=list)
 
     preserve_structure: bool = False
 
     preserve_lists: bool = False
 
     preserve_code: bool = False
+
+    preserve_examples: bool = False
+
+    preserve_reasoning: bool = False
+
+    preserve_roles: bool = False
+
+    preserve_instructions: bool = False
+
+    aggressive_filtering: bool = False
