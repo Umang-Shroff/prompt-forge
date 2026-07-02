@@ -7,6 +7,7 @@ from .enums import (
     OptimizationMode,
     PromptType,
 )
+from .quality_score import QualityScore
 from .optimization_hints import OptimizationHints
 from .intent_result import IntentResult
 from .metadata import Metadata
@@ -126,14 +127,14 @@ class AnalysisResult:
             self.contains_json
             or self.contains_xml
         )
-    
+
     @property
     def is_programming(self) -> bool:
         return (
             self.contains_code
             or self.contains_sql
         )
-    
+
     @property
     def has_formatting(self) -> bool:
         return self.contains_markdown
@@ -333,6 +334,10 @@ class PromptData:
 
     compression: CompressionResult = field(
         default_factory=CompressionResult
+    )
+
+    quality: QualityScore = field(
+        default_factory=QualityScore,
     )
 
     diagnostics: Diagnostics = field(default_factory=Diagnostics)
