@@ -8,7 +8,7 @@ from .enums import (
 )
 from .normalization_report import NormalizationReport
 from .prompt_data import AnalysisResult
-
+from .optimization_hints import OptimizationHints
 
 @dataclass(slots=True, frozen=True)
 class OptimizationContext:
@@ -24,6 +24,8 @@ class OptimizationContext:
     analysis: AnalysisResult
 
     normalization: NormalizationReport
+
+    optimization_hints: OptimizationHints
 
     # ======================================================
     # Optimization Mode

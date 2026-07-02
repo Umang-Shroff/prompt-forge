@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import re
 from abc import ABC, abstractmethod
 
 from models import OptimizationContext
@@ -21,6 +21,27 @@ class Optimizer(ABC):
     @property
     def enabled(self) -> bool:
         return True
+    
+    def is_protected(
+        self,
+        text: str,
+        context: OptimizationContext,
+    ) -> bool:
+        """
+        Returns True if the text contains a protected term.
+        """
+
+        protected = context.optimization_hints.preserve_terms
+
+        if not protected:
+            return False
+
+        lowered = text.lower()
+
+        return any(
+            term.lower() in lowered
+            for term in protected
+        )
 
     @abstractmethod
     def optimize(

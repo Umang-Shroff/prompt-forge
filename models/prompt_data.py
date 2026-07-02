@@ -7,6 +7,7 @@ from .enums import (
     OptimizationMode,
     PromptType,
 )
+from .optimization_hints import OptimizationHints
 from .intent_result import IntentResult
 from .metadata import Metadata
 from .normalization_report import NormalizationReport
@@ -292,6 +293,10 @@ class PromptData:
 
     intent: IntentResult = field(
         default_factory=IntentResult,
+    )
+
+    optimization_hints: OptimizationHints = field(
+        default_factory=OptimizationHints,
     )
     
     # ------------------------------------------------------

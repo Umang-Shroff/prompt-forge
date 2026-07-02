@@ -1,3 +1,5 @@
+from PromptOptimizer.core.optimizer.hint_aware_optimizer import HintAwareOptimizer
+
 from .filler_optimizer import FillerOptimizer
 from .redundancy_optimizer import RedundancyOptimizer
 from .registry import OptimizerRegistry
@@ -12,10 +14,10 @@ def create_default_registry() -> OptimizerRegistry:
 
     registry.extend(
         [
-            FillerOptimizer(),
+            RoleOptimizer(),
             InstructionOptimizer(),
             SentenceOptimizer(),
-            RoleOptimizer(),
+            FillerOptimizer(),
             RedundancyOptimizer(),
             RepetitionOptimizer(),
         ]

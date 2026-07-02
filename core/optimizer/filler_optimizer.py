@@ -25,19 +25,31 @@ class FillerOptimizer(RegexOptimizer):
         text: str,
         context: OptimizationContext,
     ) -> str:
-
+    
         if context.is_structured:
             return text
-
+    
         patterns = dict(FILLER_PATTERNS)
-
+    
         if context.mode == OptimizationMode.CONSERVATIVE:
             patterns.pop(
                 r"\bi would like you to\b",
                 None,
             )
-
+    
+        keywords = context.optimization_hints.preferred_keywords
+    
+        for keyword in keywords:
+        
+            if keyword.lower() in text.lower():
+                patterns.pop(
+                    rf"\b{re.escape(keyword)}\b",
+                    None,
+                )
+    
         return self.apply_patterns(
             text,
             patterns,
+            context.optimization_hints.preserve_terms,
+            context.optimization_hints.protected_phrases,
         )

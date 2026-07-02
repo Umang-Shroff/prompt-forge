@@ -6,7 +6,7 @@ from models import (
     OptimizationContext,
     PromptData,
 )
-
+from .intent.executor import StrategyExecutor
 from .default_registry import create_default_registry
 from .registry import OptimizerRegistry
 
@@ -23,16 +23,22 @@ class OptimizerStage(Stage):
     ) -> None:
 
         self._registry = registry or create_default_registry()
+        self._strategy_executor = StrategyExecutor()
 
     def execute(
         self,
         prompt: PromptData,
     ) -> PromptData:
+        
+        self._strategy_executor.execute(
+            prompt,
+        )
 
         context = OptimizationContext(
             mode=prompt.mode,
             analysis=prompt.analysis,
             normalization=prompt.normalization,
+            optimization_hints=prompt.optimization_hints,
         )
 
         text = prompt.current_prompt

@@ -20,21 +20,40 @@ class RegexOptimizer(Optimizer):
         self,
         text: str,
         patterns: dict[str, str],
+        protected_terms: set[str] | None = None,
+        protected_phrases: set[str] | None = None,
     ) -> str:
         """
         Apply regex replacements sequentially.
 
-        This helper is intentionally lightweight.
         Formatting cleanup belongs to the Normalizer stage,
         so this method only fixes whitespace introduced
         directly by replacements.
         """
 
+        protected_terms = protected_terms or set()
+        protected_phrases = protected_phrases or set()
+
         for pattern, replacement in patterns.items():
+
+            def replace(match: re.Match[str]) -> str:
+
+                matched = match.group(0)
+                lowered = matched.lower()
+            
+                for phrase in protected_phrases:
+                    if phrase.lower() in lowered:
+                        return matched
+            
+                for term in protected_terms:
+                    if term.lower() in lowered:
+                        return matched
+            
+                return replacement
 
             text = re.sub(
                 pattern,
-                replacement,
+                replace,
                 text,
                 flags=self.REGEX_FLAGS,
             )
@@ -43,19 +62,13 @@ class RegexOptimizer(Optimizer):
         # Cleanup only whitespace introduced by replacements
         # --------------------------------------------------
 
-        # Multiple spaces created after removing words
         text = re.sub(r" {2,}", " ", text)
 
-        # Remove spaces before punctuation
         text = re.sub(r"\s+([,.;:!?])", r"\1", text)
 
-        # Remove spaces immediately inside parentheses
         text = re.sub(r"\(\s+", "(", text)
         text = re.sub(r"\s+\)", ")", text)
 
-        # Collapse 3+ blank lines to 2.
-        # (2 blank lines are preserved because the
-        # BlankLineNormalizer already decided that format.)
         text = re.sub(r"\n{3,}", "\n\n", text)
 
         return text

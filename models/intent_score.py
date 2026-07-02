@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .intent_type import IntentType
+from dataclasses import dataclass, field
 
 
 @dataclass(slots=True)
@@ -15,7 +16,9 @@ class IntentScore:
 
     confidence: float = 0.0
 
-    evidence: list[str] | None = None
+    evidence: list[str] = field(
+        default_factory=list,
+    )
 
     def __post_init__(self) -> None:
 
@@ -26,6 +29,3 @@ class IntentScore:
                 self.confidence,
             ),
         )
-
-        if self.evidence is None:
-            self.evidence = []
