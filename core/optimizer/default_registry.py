@@ -1,4 +1,3 @@
-from PromptOptimizer.core.optimizer.hint_aware_optimizer import HintAwareOptimizer
 
 from .filler_optimizer import FillerOptimizer
 from .redundancy_optimizer import RedundancyOptimizer

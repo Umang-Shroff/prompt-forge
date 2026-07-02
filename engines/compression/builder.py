@@ -6,6 +6,7 @@ from core.compressor.context import CompressionContext
 
 from models import PromptData
 
+from .compression_profile import CompressionProfile
 from .policy import CompressionPolicy
 
 
@@ -23,21 +24,22 @@ class CompressionRequestBuilder:
         prompt: PromptData,
         context: CompressionContext,
         policy: CompressionPolicy,
+        profile: CompressionProfile,
         chunks: list[str],
         compress_flags: list[bool] | None = None,
         scores: list[float] | None = None,
     ) -> dict:
-
+    
         original_tokens = max(
             1,
             prompt.tokens.original_tokens,
         )
-
+    
         target_tokens = max(
             1,
-            int(original_tokens * policy.target_ratio),
+            int(original_tokens * profile.target_ratio),
         )
-
+    
         kwargs = {
             "context": chunks,
             "instruction": "",
@@ -48,19 +50,25 @@ class CompressionRequestBuilder:
             "use_context_level_filter": True,
             "use_token_level_filter": True,
             "use_sentence_level_filter": False,
-            "reorder_context": "original",
+            "reorder_context": profile.reorder_context,
             "strict_preserve_uncompressed": True,
         }
-
+    
+        # -----------------------------------------
+        # Tell LLMLingua which chunks may compress
+        # -----------------------------------------
+    
         if compress_flags is not None:
-
+        
             kwargs["context_segs"] = chunks
             kwargs["context_segs_compress"] = compress_flags
-
+    
+        # -----------------------------------------
+        # Chunk importance
+        # -----------------------------------------
+    
         if scores is not None:
-
-            kwargs["context_segs"] = chunks
-
+        
             kwargs["context_segs_rate"] = [
                 max(
                     0.10,
@@ -68,5 +76,17 @@ class CompressionRequestBuilder:
                 )
                 for score in scores
             ]
-
+    
+        # -----------------------------------------
+        # Force preservation
+        # -----------------------------------------
+    
+        if profile.force_tokens:
+        
+            kwargs["force_tokens"] = profile.force_tokens
+    
+        if profile.force_reserve:
+        
+            kwargs["force_reserve"] = profile.force_reserve
+    
         return kwargs

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from PromptOptimizer.core.optimizer.intent.strategies.plan_strategy import PlanStrategy
+from .strategies.plan_strategy import PlanStrategy
 from .registry import StrategyRegistry
 from .strategies.explain_strategy import ExplainStrategy
 from .strategies.role_strategy import RoleStrategy

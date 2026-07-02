@@ -7,7 +7,6 @@ from models import (
 
 from ..strategy import IntentOptimizationStrategy
 
-
 class CodeStrategy(IntentOptimizationStrategy):
     """
     Preserves code-related identifiers and keywords.

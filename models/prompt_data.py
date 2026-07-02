@@ -119,6 +119,24 @@ class AnalysisResult:
             for detector, score in self.confidence.items()
             if score > 0
         ]
+    
+    @property
+    def is_structured(self) -> bool:
+        return (
+            self.contains_json
+            or self.contains_xml
+        )
+    
+    @property
+    def is_programming(self) -> bool:
+        return (
+            self.contains_code
+            or self.contains_sql
+        )
+    
+    @property
+    def has_formatting(self) -> bool:
+        return self.contains_markdown
 
 
 # ==========================================================

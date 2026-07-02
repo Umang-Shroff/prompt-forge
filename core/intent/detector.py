@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from ...models.intent_score import IntentScore
+from models.intent_score import IntentScore
 
-from ...models.intent_document import IntentDocument
+from models.intent_document import IntentDocument
 
 
 class IntentDetector(ABC):

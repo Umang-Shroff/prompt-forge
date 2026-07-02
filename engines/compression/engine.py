@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
-from models import PromptData
-
-from engines.compression.policy import CompressionPolicy
-
-from core.compressor.context import CompressionContext
+if TYPE_CHECKING:
+    from models import PromptData
+    from core.compressor.context import CompressionContext
+    from engines.compression.policy import CompressionPolicy
 
 class CompressionEngine(ABC):
     """

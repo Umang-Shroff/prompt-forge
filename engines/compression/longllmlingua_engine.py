@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
+from .compression_profile import CompressionProfile
 from core.compressor.context import CompressionContext
-
+from .profile_builder import CompressionProfileBuilder
 from models import (
     CompressionConfig,
     PromptData,
 )
-
+from .importance import (
+    ImportanceScorer,
+    reorder_chunks,
+)
 from .builder import CompressionRequestBuilder
 from .chunker import PromptChunker
 from .engine import CompressionEngine
@@ -16,7 +20,6 @@ from .extractor import CompressionResultExtractor
 from .loader import CompressorLoader
 from .compressor_cache import CompressorCache
 from .policy import CompressionPolicy
-from .scorer import ImportanceScorer
 
 
 class LongLLMLinguaEngine(CompressionEngine):
@@ -46,10 +49,12 @@ class LongLLMLinguaEngine(CompressionEngine):
 
         self._chunker = PromptChunker()
 
-        self._scorer = ImportanceScorer()
+        self._profile_builder = CompressionProfileBuilder()
 
         # Lazy initialization.
         self._compressor: Any | None = None
+
+        self._importance_scorer = ImportanceScorer()
 
     def _load_compressor(self) -> Any:
         """
@@ -124,29 +129,7 @@ class LongLLMLinguaEngine(CompressionEngine):
         return chunks
     
 
-    def _score_chunks(
-        self,
-        chunks: list[str],
-    ) -> tuple[list[str], list[float]]:
-        """
-        Score every chunk.
-
-        We intentionally preserve the original order because
-        LLMLingua performs its own ranking internally.
-
-        The scores are retained for future support of
-        per-segment compression.
-        """
-
-        scores: list[float] = []
-
-        for chunk in chunks:
-
-            score = self._scorer.score(chunk)
-
-            scores.append(score)
-
-        return chunks, scores
+    
     
 
     def _build_request(
@@ -154,7 +137,9 @@ class LongLLMLinguaEngine(CompressionEngine):
         prompt: PromptData,
         context: CompressionContext,
         policy: CompressionPolicy,
+        profile: CompressionProfile,
         chunks: list[str],
+        compress_flags: list[bool],
         scores: list[float],
     ) -> dict:
         """
@@ -168,7 +153,9 @@ class LongLLMLinguaEngine(CompressionEngine):
             prompt=prompt,
             context=context,
             policy=policy,
+            profile=profile,
             chunks=chunks,
+            compress_flags=compress_flags,
             scores=scores,
         )
     
@@ -223,6 +210,13 @@ class LongLLMLinguaEngine(CompressionEngine):
         if not text.strip():
             return text
 
+        profile = self._profile_builder.build(
+            prompt,
+        )
+
+        if not profile.enabled:
+            return text
+        
         try:
 
             # ---------------------------------
@@ -237,9 +231,20 @@ class LongLLMLinguaEngine(CompressionEngine):
             # Score chunks
             # ---------------------------------
 
-            ordered_chunks, scores = self._score_chunks(
-                chunks,
+            scores = self._importance_scorer.score(
+                chunks=chunks,
+                prompt=prompt,
             )
+            
+            ordered_chunks, scores = reorder_chunks(
+                chunks,
+                scores,
+            )
+            
+            compress_flags = [
+                score < 0.80
+                for score in scores
+            ]
 
             # ---------------------------------
             # Build LLMLingua request
@@ -249,7 +254,9 @@ class LongLLMLinguaEngine(CompressionEngine):
                 prompt=prompt,
                 context=context,
                 policy=policy,
+                profile=profile,
                 chunks=ordered_chunks,
+                compress_flags=compress_flags,
                 scores=scores,
             )
 

@@ -4,14 +4,16 @@ from dataclasses import dataclass, field
 
 from .intent_score import IntentScore
 from .intent_type import IntentType
-from core.intent.config import STRONG_INTENT_CONFIDENCE
+
 
 @dataclass(slots=True)
 class IntentResult:
     """
     Stores all detected intents ordered by confidence.
     """
-
+    
+    STRONG_INTENT_CONFIDENCE = 0.75
+    
     scores: list[IntentScore] = field(
         default_factory=list,
     )

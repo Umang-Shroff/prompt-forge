@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from ...models.intent_document import IntentDocument
+from models.intent_document import IntentDocument
 
 from models import AnalysisResult
 

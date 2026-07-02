@@ -7,6 +7,7 @@ from core.normalizer import NormalizerStage
 from core.optimizer import OptimizerStage
 from core.pipeline import Pipeline
 from core.tokenizer.token_stage import TokenCounterStage
+from core.reconstructor import ReconstructorStage
 
 
 def create_default_pipeline() -> Pipeline:
@@ -16,11 +17,12 @@ def create_default_pipeline() -> Pipeline:
 
     return Pipeline(
         [
-            TokenCounterStage(),
             AnalyzerStage(),
-            IntentStage(),
             NormalizerStage(),
+            IntentStage(),
             OptimizerStage(),
+            ReconstructorStage(),
+            TokenCounterStage(),
             CompressorStage(),
             TokenCounterStage(),
         ]

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from ..optimizer.regex_optimizer import RegexOptimizer
+from .regex_optimizer import RegexOptimizer
 from models import (
     OptimizationContext,
     OptimizationMode,
