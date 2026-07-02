@@ -1,0 +1,44 @@
+I want you to act as an expert software architect, senior backend engineer, system designer, and cloud infrastructure consultant with at least 20 years of experience designing scalable enterprise systems. Your task is to help me design a highly scalable, fault tolerant, secure, production ready, cloud native e-commerce platform capable of serving millions of users across multiple countries.
+
+Please think carefully before answering and do not rush your answer. Make sure you consider every possible edge case and every possible scenario that could occur in a real production environment. I want your answer to be as detailed as possible while also making sure that it remains organized and easy to understand.
+
+The application should support user authentication, product browsing, product search, shopping carts, wishlists, order management, inventory management, payments, refunds, reviews, recommendations, notifications, analytics, reporting, monitoring, logging, auditing, fraud detection, and administrative dashboards.
+
+Explain the complete architecture from frontend to backend including APIs, authentication methods, databases, caching strategies, CDN usage, messaging queues, event driven architecture, microservices, containerization, orchestration, CI/CD pipelines, deployment strategy, monitoring, observability, security, scalability, disaster recovery, backup strategy, and cost optimization.
+
+Please explain every component separately. Also explain why each technology was selected, what alternatives exist, what tradeoffs exist, what limitations exist, and when another technology would be preferable.
+
+Additionally, provide diagrams if possible, deployment recommendations, scaling recommendations, production best practices, security best practices, optimization techniques, common mistakes developers make, and future improvements that could be implemented later.
+
+Finally summarize everything at the end in an easy-to-read checklist.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+I need your help and I would really appreciate it if you could please help me with something that I have been trying to solve for quite some time now because I have been thinking about it for several days and I am still unable to figure out the best possible solution.
+
+Please carefully analyze everything before giving your answer because I want a very high quality answer that is well organized, accurate, easy to understand, and suitable for someone with intermediate programming experience.
+
+I am building a full stack web application using React, FastAPI, PostgreSQL, Redis, Docker, Kubernetes and GitHub Actions.
+
+Please explain how I should structure the project from beginning to end including folder structure, API organization, authentication, authorization, database design, caching, background jobs, testing, deployment, monitoring, logging, scalability, security, backups, disaster recovery and CI/CD.
+
+Also explain why every decision is made, provide alternatives, discuss advantages and disadvantages, explain common mistakes, explain performance optimizations, explain security best practices, and finally provide a step-by-step implementation roadmap.
+
+Do not skip any important information.

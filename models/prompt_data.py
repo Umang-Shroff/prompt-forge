@@ -7,6 +7,7 @@ from .enums import (
     OptimizationMode,
     PromptType,
 )
+from .intent_result import IntentResult
 from .metadata import Metadata
 from .normalization_report import NormalizationReport
 
@@ -288,6 +289,10 @@ class PromptData:
         return self.tokens.optimized_tokens
     
     analysis: AnalysisResult = field(default_factory=AnalysisResult)
+
+    intent: IntentResult = field(
+        default_factory=IntentResult,
+    )
     
     # ------------------------------------------------------
     # Normalization

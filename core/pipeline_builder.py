@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from core.analyzer import AnalyzerStage
 from core.compressor import CompressorStage
+from core.intent import IntentStage
 from core.normalizer import NormalizerStage
 from core.optimizer import OptimizerStage
 from core.pipeline import Pipeline
@@ -17,6 +18,7 @@ def create_default_pipeline() -> Pipeline:
         [
             TokenCounterStage(),
             AnalyzerStage(),
+            IntentStage(),
             NormalizerStage(),
             OptimizerStage(),
             CompressorStage(),
