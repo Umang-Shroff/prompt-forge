@@ -19,10 +19,78 @@ class CompressionRequestBuilder:
     the exact PromptCompressor API.
     """
 
+    def _compute_rate(
+        self,
+        prompt: PromptData,
+        profile: CompressionProfile,
+    ) -> float:
+        """
+        Computes an adaptive LLMLingua compression rate.
+
+        Higher values preserve more information.
+        Lower values compress more aggressively.
+        """
+
+        rate = profile.target_ratio
+
+        quality = prompt.quality.overall
+
+        # ----------------------------------------
+        # Quality adjustment
+        # ----------------------------------------
+
+        if quality >= 90:
+            rate += 0.10
+
+        elif quality >= 80:
+            rate += 0.05
+
+        elif quality <= 60:
+            rate -= 0.10
+
+        elif quality <= 70:
+            rate -= 0.05
+
+        # ----------------------------------------
+        # Mode adjustment
+        # ----------------------------------------
+
+        mode = prompt.mode.name
+
+        if mode == "CONSERVATIVE":
+            rate += 0.10
+
+        elif mode == "AGGRESSIVE":
+            rate -= 0.10
+
+        # ----------------------------------------
+        # Prompt characteristics
+        # ----------------------------------------
+
+        if profile.preserve_code:
+            rate += 0.05
+
+        if profile.preserve_structure:
+            rate += 0.05
+
+        if profile.preserve_lists:
+            rate += 0.03
+
+        # ----------------------------------------
+        # Clamp
+        # ----------------------------------------
+
+        return max(
+            0.30,
+            min(
+                rate,
+                0.95,
+            ),
+        )
+
     def build(
         self,
         prompt: PromptData,
-        context: CompressionContext,
         policy: CompressionPolicy,
         profile: CompressionProfile,
         chunks: list[str],
@@ -38,6 +106,11 @@ class CompressionRequestBuilder:
         target_tokens = max(
             1,
             int(original_tokens * profile.target_ratio),
+        )
+
+        rate = self._compute_rate(
+            prompt,
+            profile,
         )
     
         use_context_filter = True
@@ -65,6 +138,7 @@ class CompressionRequestBuilder:
             "context": chunks,
             "instruction": "",
             "question": "",
+            "rate": rate,
             "target_token": target_tokens,
             "context_budget": policy.context_budget,
             "token_budget_ratio": policy.token_budget_ratio,
@@ -96,20 +170,20 @@ class CompressionRequestBuilder:
             
                 if profile.aggressive_filtering:
                     score *= 0.90
-            
+
                 elif profile.preserve_reasoning:
                     score *= 1.10
-            
+
                 elif profile.preserve_roles:
                     score *= 1.10
-            
+
                 rates.append(
                     max(
                         0.10,
                         min(score, 1.0),
                     )
                 )
-            
+
             kwargs["context_segs_rate"] = rates
     
         # -----------------------------------------
@@ -119,9 +193,5 @@ class CompressionRequestBuilder:
         if profile.force_tokens:
         
             kwargs["force_tokens"] = profile.force_tokens
-    
-        if profile.force_reserve:
-        
-            kwargs["force_reserve"] = profile.force_reserve
     
         return kwargs

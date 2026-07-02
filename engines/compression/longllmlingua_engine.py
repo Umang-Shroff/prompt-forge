@@ -191,7 +191,6 @@ class LongLLMLinguaEngine(CompressionEngine):
 
         return self._builder.build(
             prompt=prompt,
-            context=context,
             policy=policy,
             profile=profile,
             chunks=chunks,
@@ -280,7 +279,7 @@ class LongLLMLinguaEngine(CompressionEngine):
                 chunks,
                 scores,
             )
-            
+
             compress_flags = self._build_compression_flags(
                 ordered_scores,
             )
@@ -336,10 +335,14 @@ class LongLLMLinguaEngine(CompressionEngine):
 
         except Exception as exc:
 
+            import traceback
+
+            traceback.print_exc()
+
             prompt.compression.success = False
 
             prompt.diagnostics.warnings.append(
                 f"LongLLMLingua compression failed: {exc}"
             )
 
-            return text
+            raise
