@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from rich.panel import Panel
-from rich.syntax import Syntax
+import pyperclip
 
 from .console import console
 
 
 class ResultView:
     """
-    Displays the optimized prompt.
+    Displays the optimized prompt and automatically copies it to the clipboard.
     """
 
     def show(
@@ -16,22 +15,26 @@ class ResultView:
         optimized_prompt: str,
     ) -> None:
 
-        syntax = Syntax(
-            optimized_prompt,
-            "markdown",
-            line_numbers=False,
-            word_wrap=True,
-        )
+        copied = False
+
+        try:
+            pyperclip.copy(optimized_prompt)
+            copied = True
+        except pyperclip.PyperclipException:
+            pass
 
         console.print()
+        console.rule("[bold green]Optimized Prompt[/bold green]")
+        console.print(optimized_prompt)
+        console.rule(style="green")
 
-        console.print(
-            Panel(
-                syntax,
-                title="[bold green]Optimized Prompt[/bold green]",
-                border_style="green",
-                expand=True,
+        if copied:
+            console.print(
+                "[green]✓ Optimized prompt copied to clipboard.[/green]"
             )
-        )
+        else:
+            console.print(
+                "[yellow]⚠ Clipboard unavailable. Copy the prompt manually.[/yellow]"
+            )
 
         console.print()

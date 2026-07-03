@@ -8,3 +8,4 @@ llmlingua
 prompt_toolkit
 rich
 questionary
+pyperclip

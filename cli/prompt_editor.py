@@ -12,17 +12,17 @@ class PromptEditor:
     """
     Multiline prompt editor.
 
-    Ctrl + Enter submits the prompt.
+    Ctrl + D submits the prompt.
     """
 
     def __init__(self) -> None:
 
         self._bindings = KeyBindings()
 
-        @self._bindings.add("c-m")
+        @self._bindings.add("c-d")
         def _(event) -> None:
             """
-            Ctrl + Enter
+            Ctrl + D
             """
             event.app.exit(
                 result=event.app.current_buffer.text,
@@ -43,42 +43,38 @@ class PromptEditor:
             ],
         )
 
-    def get_prompt(
-        self,
-        mode: OptimizationMode,
-    ) -> str:
-        """
-        Returns the prompt entered by the user.
-
-        Parameters
-        ----------
-        mode:
-            Current optimization mode.
-
-        Returns
-        -------
-        str
-            Prompt entered by the user.
-        """
-
+    def get_prompt(self, mode: OptimizationMode) -> str:
         print()
-
+    
         print(f"Current Mode : {mode.name.title()}")
-
         print("Type 'exit' to quit.")
-
-        print("Press Ctrl + Enter to optimize prompt.")
-
+        print("Press Ctrl + D to optimize prompt.")
         print()
-
+    
         while True:
-
+        
             text = self._session.prompt(
                 "$promptForge: ",
-            )
-
-            text = text.strip()
-
+            ).strip()
+    
+            # 🔥 handle commands immediately
+            if text.lower() == "exit":
+                raise SystemExit
+    
+            if text.lower() == "clear":
+                import os
+                os.system("cls" if os.name == "nt" else "clear")
+                continue
+            
+            if text.lower() == "help":
+                print()
+                print("Available Commands")
+                print("------------------")
+                print("help  - Show this help")
+                print("clear - Clear terminal")
+                print("exit  - Exit PromptForge")
+                print()
+                continue
+            
             if text:
-
                 return text
