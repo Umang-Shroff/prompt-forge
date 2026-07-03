@@ -43,6 +43,7 @@ class CompressionProfileBuilder:
         preserve_roles = False
         preserve_instructions = False
         aggressive_filtering = False
+        chunk_size = 900
 
         # ----------------------------------
         # Adaptive Rules
@@ -63,6 +64,8 @@ class CompressionProfileBuilder:
 
             preserve_structure = True
 
+            chunk_size = 1800
+
         # Code prompts should retain identifiers.
         if analysis.contains_code:
 
@@ -73,6 +76,8 @@ class CompressionProfileBuilder:
 
             preserve_code = True
 
+            chunk_size = 1400
+
         # Markdown formatting is valuable.
         if analysis.contains_markdown:
 
@@ -82,6 +87,8 @@ class CompressionProfileBuilder:
             )
 
             preserve_lists = True
+
+            chunk_size = 1000
 
         
         # Preserve role prompts.
@@ -147,6 +154,7 @@ class CompressionProfileBuilder:
         return CompressionProfile(
             enabled=enabled,
             target_ratio=ratio,
+            chunk_size=chunk_size,
             reorder_context="original",
             force_tokens=sorted(
                 prompt.optimization_hints.preferred_keywords,

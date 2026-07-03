@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from core.post_cleanup.post_cleanup_stage import PostCleanupStage
 from core.analyzer import AnalyzerStage
 from core.compressor import CompressorStage
 from core.intent import IntentStage
@@ -21,11 +21,11 @@ def create_default_pipeline() -> Pipeline:
             AnalyzerStage(),
             NormalizerStage(),
             IntentStage(),
-            QualityStage(),
             OptimizerStage(),
             ReconstructorStage(),
             TokenCounterStage(),
             CompressorStage(),
+            PostCleanupStage(),
             TokenCounterStage(),
         ]
     )

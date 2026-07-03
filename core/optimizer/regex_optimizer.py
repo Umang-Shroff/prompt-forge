@@ -14,7 +14,7 @@ class RegexOptimizer(Optimizer):
     regex patterns to replacement strings.
     """
 
-    REGEX_FLAGS = re.IGNORECASE
+    REGEX_FLAGS: re.RegexFlag = re.IGNORECASE
 
     def apply_patterns(
         self,

@@ -17,7 +17,6 @@ from .builder import CompressionRequestBuilder
 from .chunker import PromptChunker
 from .engine import CompressionEngine
 from .extractor import CompressionResultExtractor
-from .loader import CompressorLoader
 from .compressor_cache import CompressorCache
 from .policy import CompressionPolicy
 
@@ -113,20 +112,14 @@ class LongLLMLinguaEngine(CompressionEngine):
     def _chunk_prompt(
         self,
         text: str,
+        profile: CompressionProfile,
     ) -> list[str]:
-        """
-        Split the prompt into chunks suitable for LLMLingua.
-
-        Falls back to the original prompt if the chunker
-        produces no output.
-        """
-
+    
+        self._chunker.max_chunk_size = profile.chunk_size
+    
         chunks = self._chunker.chunk(text)
-
-        if not chunks:
-            return [text]
-
-        return chunks
+    
+        return chunks or [text]
     
     def _order_chunks(
         self,
@@ -165,10 +158,20 @@ class LongLLMLinguaEngine(CompressionEngine):
 
         average = sum(scores) / len(scores)
 
-        return [
-            score < average
-            for score in scores
-        ]
+        flags: list[bool] = []
+
+        for score in scores:
+        
+            if score >= 0.90:
+                flags.append(False)
+
+            elif score >= average:
+                flags.append(False)
+
+            else:
+                flags.append(True)
+
+        return flags
     
     
 
@@ -264,6 +267,7 @@ class LongLLMLinguaEngine(CompressionEngine):
 
             chunks = self._chunk_prompt(
                 text,
+                profile,
             )
 
             # ---------------------------------
@@ -283,11 +287,6 @@ class LongLLMLinguaEngine(CompressionEngine):
             compress_flags = self._build_compression_flags(
                 ordered_scores,
             )
-
-            compress_flags = [
-                score < 0.80
-                for score in scores
-            ]
 
             # ---------------------------------
             # Build LLMLingua request

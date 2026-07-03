@@ -37,3 +37,5 @@ class CompressionProfile:
     preserve_instructions: bool = False
 
     aggressive_filtering: bool = False
+
+    chunk_size: int = 900
