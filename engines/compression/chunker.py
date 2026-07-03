@@ -24,7 +24,10 @@ class PromptChunker:
     def chunk(
         self,
         text: str,
+        max_chunk_size: int = 900,
     ) -> list[str]:
+        
+        self.max_chunk_size = max_chunk_size
 
         if not text.strip():
             return []

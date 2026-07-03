@@ -19,7 +19,10 @@ from rich.live import Live
 
 console = Console()
 
-spinner = Spinner("dots", text="Optimizing prompt...")
+spinner = Spinner(
+    "dots",
+    text="[cyan]Optimizing Prompt[/cyan]",
+)
 
 
 class PromptForgeApp:
@@ -44,6 +47,7 @@ class PromptForgeApp:
     def run(self) -> None:
 
         show_header()
+        
 
         while True:
 
@@ -69,6 +73,11 @@ class PromptForgeApp:
             # ----------------------------
             # 3. Run optimization
             # ----------------------------
+            console.print(
+                "[cyan]▶[/cyan] "
+                f"Mode: [bold]{mode.name.title()}[/bold]"
+            )
+            
             with Live(spinner, refresh_per_second=10):
                 start = time.time()
 
@@ -76,14 +85,9 @@ class PromptForgeApp:
 
                 end = time.time()
 
-            start = time.time()
-
-            result = self._optimizer.optimize(
-                prompt,
-                mode,
+            console.print(
+                "[green]✔ Optimization Complete[/green]"
             )
-
-            end = time.time()
 
             # ----------------------------
             # 4. Display results
@@ -93,6 +97,9 @@ class PromptForgeApp:
             self._summary.show(result)
 
             console.print(
-                f"[cyan]Execution Time:[/cyan] [green]{end - start:.2f}s[/green]\n"
+                "[bright_black]"
+                f"Completed in {end-start:.2f}s"
+                "[/bright_black]"
             )
+
             console.print("\n")

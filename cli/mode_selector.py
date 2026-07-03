@@ -14,15 +14,17 @@ class ModeSelector:
 
         self._choices = {
             OptimizationMode.CONSERVATIVE: questionary.Choice(
-                title="Conservative",
+                title="Conservative  •  Preserve most context",
                 value=OptimizationMode.CONSERVATIVE,
             ),
+
             OptimizationMode.BALANCED: questionary.Choice(
-                title="Balanced",
+                title="Balanced      •  Best compression balance",
                 value=OptimizationMode.BALANCED,
             ),
+
             OptimizationMode.AGGRESSIVE: questionary.Choice(
-                title="Aggressive",
+                title="Aggressive    •  Maximum token reduction",
                 value=OptimizationMode.AGGRESSIVE,
             ),
         }

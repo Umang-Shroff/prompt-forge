@@ -30,7 +30,7 @@ class ResultView:
 
         if copied:
             console.print(
-                "[green]✓ Optimized prompt copied to clipboard.[/green]"
+                "[green]✔ Copied to clipboard[/green]"
             )
         else:
             console.print(

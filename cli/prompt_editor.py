@@ -46,10 +46,11 @@ class PromptEditor:
     def get_prompt(self, mode: OptimizationMode) -> str:
         print()
 
-        print(f"Current Mode : {mode.name.title()}")
+        print(f"Current Mode : "f"[ {mode.name.title()} ]")
         print("Type 'exit' to quit.")
-        print("Press Ctrl + D to optimize prompt.")
+        print("Press Ctrl + D to submit.")
         print()
+
 
         while True:
 
