@@ -55,6 +55,37 @@ EXAMPLE_PATTERNS = (
     r"\be\.g\.\b",
 )
 
+OUTPUT_PATTERNS = (
+    r"\bsummary\b",
+    r"\bsummarize\b",
+    r"\bchecklist\b",
+    r"\btable\b",
+    r"\bjson\b",
+    r"\bmarkdown\b",
+    r"\bdiagram\b",
+    r"\bflowchart\b",
+)
+
+SECURITY_PATTERNS = (
+    r"\bsecurity\b",
+    r"\bauthentication\b",
+    r"\bauthorization\b",
+    r"\bencryption\b",
+)
+
+REQUIREMENT_PATTERNS = (
+    r"\brequirement\b",
+    r"\bcritical\b",
+    r"\bimportant\b",
+    r"\bmandatory\b",
+    r"\bessential\b",
+)
+
+LIST_PATTERNS = (
+    r"^\s*[-*]\s",
+    r"^\s*\d+\.",
+)
+
 
 def score_chunk(
     chunk: str,
@@ -75,10 +106,13 @@ def score_chunk(
     # -------------------------------
 
     if index == 0:
-        score += 0.20
+        score += 0.30
+
+    elif index == 1:
+        score += 0.15
 
     elif index == total_chunks - 1:
-        score += 0.10
+        score += 0.15
 
     # -------------------------------
     # Role
@@ -153,6 +187,24 @@ def score_chunk(
     ):
         score += 0.15
 
+    if any(
+        re.search(pattern, lower)
+        for pattern in OUTPUT_PATTERNS
+    ):
+        score += 0.20
+
+    if any(
+        re.search(pattern, lower)
+        for pattern in SECURITY_PATTERNS
+    ):
+        score += 0.15
+
+    if any(
+        re.search(pattern, lower)
+        for pattern in REQUIREMENT_PATTERNS
+    ):
+        score += 0.15
+
     # -------------------------------
     # Code
     # -------------------------------
@@ -166,6 +218,16 @@ def score_chunk(
             or "import " in chunk
         ):
             score += 0.25
+
+    if any(
+        re.search(
+            pattern,
+            chunk,
+            re.MULTILINE,
+        )
+        for pattern in LIST_PATTERNS
+    ):
+        score += 0.15
 
     # -------------------------------
     # Examples
@@ -184,11 +246,31 @@ def score_chunk(
     # Length
     # -------------------------------
 
-    if len(chunk) < 60:
+    length = len(chunk)
+
+    if length < 40:
+        score -= 0.10
+
+    elif length < 100:
         score -= 0.05
 
-    elif len(chunk) > 400:
-        score += 0.05
+    elif length > 800:
+        score -= 0.05
+
+    elif length > 250:
+        score += 0.10
+
+    if prompt.analysis.contains_json:
+        score += 0.20
+    
+    if prompt.analysis.contains_xml:
+        score += 0.20
+    
+    if prompt.analysis.contains_sql:
+        score += 0.20
+    
+    if prompt.analysis.contains_markdown:
+        score += 0.10
 
     return max(
         0.10,
