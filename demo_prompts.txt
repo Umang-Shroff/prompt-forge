@@ -42,3 +42,82 @@ Please explain how I should structure the project from beginning to end includin
 Also explain why every decision is made, provide alternatives, discuss advantages and disadvantages, explain common mistakes, explain performance optimizations, explain security best practices, and finally provide a step-by-step implementation roadmap.
 
 Do not skip any important information.
+
+
+
+
+
+
+test 1
+I would like you to act as an extremely experienced software architect with more than twenty years of experience in designing highly scalable distributed systems.
+
+Please think very carefully before answering.
+
+I would like you to provide a very detailed explanation of how to design a scalable online banking system.
+
+Please explain every architectural decision.
+
+Please explain why each technology was selected.
+
+Please provide alternatives.
+
+Please explain tradeoffs.
+
+Please summarize everything at the end.
+
+
+
+test 3
+I would like you to please kindly help me by providing me with a detailed explanation.
+
+Please make sure that you explain everything in great detail.
+
+I would really appreciate it if you could explain why every decision was made.
+
+Please make sure you do not forget anything.
+
+Please make sure your explanation is as detailed as possible.
+
+
+
+
+test 12
+I would like you to act as an extremely experienced senior software architect, cloud consultant, backend engineer, DevOps engineer, database administrator, infrastructure specialist, cybersecurity expert, and system designer with more than twenty years of experience.
+
+Please think very carefully before answering.
+
+Please do not rush.
+
+Please make sure you consider every possible edge case.
+
+Please make sure you consider every possible scenario.
+
+Please explain every architectural decision.
+
+Please explain every technology.
+
+Please explain every alternative.
+
+Please explain every tradeoff.
+
+Please explain every limitation.
+
+Please explain every best practice.
+
+Please explain every security consideration.
+
+Please provide diagrams.
+
+Please provide diagrams.
+
+Please provide diagrams.
+
+The application should should support authentication authentication, payments payments, monitoring monitoring, logging logging, analytics analytics, notifications notifications, dashboards dashboards.
+
+The system should be cloud native.
+
+The system should be cloud native.
+
+The system should be cloud native.
+
+Finally finally summarize everything in an easy-to-read checklist.

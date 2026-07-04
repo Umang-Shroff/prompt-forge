@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from models import OptimizationMode
 from models import PromptData
 from .compression_profile import CompressionProfile
 
@@ -43,7 +44,14 @@ class CompressionProfileBuilder:
         preserve_roles = False
         preserve_instructions = False
         aggressive_filtering = False
-        chunk_size = 900
+        if mode.name == OptimizationMode.CONSERVATIVE:
+            max_chunk_tokens = 380
+
+        elif mode.name == OptimizationMode.BALANCED:
+            max_chunk_tokens = 340
+
+        else:
+            max_chunk_tokens = 300
 
         # ----------------------------------
         # Adaptive Rules
@@ -64,7 +72,6 @@ class CompressionProfileBuilder:
 
             preserve_structure = True
 
-            chunk_size = 1800
 
         # Code prompts should retain identifiers.
         if analysis.contains_code:
@@ -76,7 +83,6 @@ class CompressionProfileBuilder:
 
             preserve_code = True
 
-            chunk_size = 1400
 
         # Markdown formatting is valuable.
         if analysis.contains_markdown:
@@ -88,7 +94,6 @@ class CompressionProfileBuilder:
 
             preserve_lists = True
 
-            chunk_size = 1000
 
         
         # Preserve role prompts.
@@ -154,7 +159,7 @@ class CompressionProfileBuilder:
         return CompressionProfile(
             enabled=enabled,
             target_ratio=ratio,
-            chunk_size=chunk_size,
+            max_chunk_tokens=max_chunk_tokens,
             reorder_context="original",
             force_tokens=sorted(
                 prompt.optimization_hints.preferred_keywords,

@@ -19,12 +19,12 @@ class PromptChunker:
     while avoiding oversized chunks.
     """
 
-    max_chunk_size = 900
+    max_chunk_size = 350
 
     def chunk(
         self,
         text: str,
-        max_chunk_size: int = 900,
+        max_chunk_size: int = 350,
     ) -> list[str]:
         
         self.max_chunk_size = max_chunk_size
@@ -58,8 +58,10 @@ class PromptChunker:
 
                 if not inside_code:
 
-                    chunks.append(
-                        "\n".join(current).strip()
+                    chunks.extend(
+                        self._split_large_chunk(
+                            "\n".join(current).strip()
+                        )
                     )
 
                     current = []
@@ -80,8 +82,10 @@ class PromptChunker:
 
                 if current:
 
-                    chunks.append(
-                        "\n".join(current).strip()
+                    chunks.extend(
+                        self._split_large_chunk(
+                            "\n".join(current).strip()
+                        )
                     )
 
                     current = []
@@ -96,8 +100,10 @@ class PromptChunker:
 
                 if current:
 
-                    chunks.append(
-                        "\n".join(current).strip()
+                    chunks.extend(
+                        self._split_large_chunk(
+                            "\n".join(current).strip()
+                        )
                     )
 
                     current = []
@@ -132,7 +138,7 @@ class PromptChunker:
 
             current.append(line)
 
-            if len("\n".join(current)) >= self.max_chunk_size:
+            if self._estimate_tokens("\n".join(current)) >= self.max_chunk_size:
 
                 chunks.extend(
                     self._split_large_chunk(
@@ -156,12 +162,29 @@ class PromptChunker:
             if c.strip()
         ]
 
+
+    def _estimate_tokens(
+        self,
+        text: str,
+    ) -> int:
+        """
+        Rough token estimation.
+
+        English averages ~4 characters/token.
+        """
+
+        return max(
+            1,
+            len(text) // 4,
+        )
+
+
     def _split_large_chunk(
         self,
         text: str,
     ) -> list[str]:
 
-        if len(text) <= self.max_chunk_size:
+        if self._estimate_tokens(text) <= self.max_chunk_size:
             return [text]
 
         sentences = re.split(
@@ -175,32 +198,82 @@ class PromptChunker:
 
         for sentence in sentences:
 
+            # -----------------------------------
+            # Sentence itself too large
+            # Split by words instead
+            # -----------------------------------
+
             if (
-                len(current)
-                + len(sentence)
-                + 1
+                self._estimate_tokens(sentence)
+                > self.max_chunk_size
+            ):
+
+                if current:
+
+                    chunks.append(current.strip())
+                    current = ""
+
+                chunks.extend(
+                    self._split_by_words(sentence)
+                )
+
+                continue
+
+            candidate = current + sentence + " "
+
+            if (
+                self._estimate_tokens(candidate)
                 <= self.max_chunk_size
             ):
 
-                current += (
-                    sentence
-                    + " "
-                )
+                current = candidate
 
             else:
 
                 if current:
-
-                    chunks.append(
-                        current.strip()
-                    )
+                    chunks.append(current.strip())
 
                 current = sentence + " "
 
         if current:
+            chunks.append(current.strip())
 
-            chunks.append(
-                current.strip()
-            )
-
+        return chunks
+    
+    def _split_by_words(
+        self,
+        text: str,
+    ) -> list[str]:
+        """
+        Final fallback for extremely long
+        sentences without punctuation.
+        """
+    
+        words = text.split()
+    
+        chunks: list[str] = []
+    
+        current = ""
+    
+        for word in words:
+        
+            candidate = current + word + " "
+    
+            if (
+                self._estimate_tokens(candidate)
+                <= self.max_chunk_size
+            ):
+    
+                current = candidate
+    
+            else:
+            
+                if current:
+                    chunks.append(current.strip())
+    
+                current = word + " "
+    
+        if current:
+            chunks.append(current.strip())
+    
         return chunks

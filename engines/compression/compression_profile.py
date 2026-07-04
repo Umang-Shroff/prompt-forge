@@ -38,4 +38,4 @@ class CompressionProfile:
 
     aggressive_filtering: bool = False
 
-    chunk_size: int = 900
+    max_chunk_tokens: int = 340

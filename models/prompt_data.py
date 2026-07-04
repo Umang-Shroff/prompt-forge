@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+from core.regions import Region
 from dataclasses import dataclass, field
 from .optimization_report import OptimizationReport
 from .enums import (
@@ -247,6 +247,13 @@ class PromptData:
     # ------------------------------------------------------
 
     mode: OptimizationMode = OptimizationMode.BALANCED
+
+    optimization_hints: OptimizationHints = field(
+        default_factory=OptimizationHints,
+    )
+    regions: list[Region] = field(
+        default_factory=list,
+    )
 
     # ------------------------------------------------------
     # Pipeline Results

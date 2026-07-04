@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from typing import Any
-
+from core.region_classifier.classifier import RegionClassifier
+from core.regions import RegionType
 from .compression_profile import CompressionProfile
 from core.compressor.context import CompressionContext
 from .profile_builder import CompressionProfileBuilder
@@ -49,6 +50,8 @@ class LongLLMLinguaEngine(CompressionEngine):
         self._chunker = PromptChunker()
 
         self._profile_builder = CompressionProfileBuilder()
+
+        self._region_classifier = RegionClassifier()
 
         # Lazy initialization.
         self._compressor: Any | None = None
@@ -115,12 +118,51 @@ class LongLLMLinguaEngine(CompressionEngine):
         profile: CompressionProfile,
     ) -> list[str]:
     
-        self._chunker.max_chunk_size = profile.chunk_size
+        self._chunker.max_chunk_size = profile.max_chunk_tokens
     
         chunks = self._chunker.chunk(text)
     
         return chunks or [text]
     
+
+    def _build_chunks_from_regions(
+        self,
+        prompt: PromptData,
+        profile: CompressionProfile,
+    ) -> tuple[list[str], list[bool]]:
+
+        regions = self._region_classifier.classify(
+            prompt.current_prompt,
+        )
+
+        chunks: list[str] = []
+
+        compress_flags: list[bool] = []
+
+        for region in regions:
+
+            # Preserve non-compressible regions exactly
+            if not region.compressible:
+
+                chunks.append(region.text)
+                compress_flags.append(False)
+                continue
+
+            # Chunk only normal text
+            text_chunks = self._chunk_prompt(
+                region.text,
+                profile,
+            )
+
+            chunks.extend(text_chunks)
+
+            compress_flags.extend(
+                [True] * len(text_chunks)
+            )
+
+        return chunks, compress_flags
+    
+
     def _order_chunks(
         self,
         chunks: list[str],
@@ -265,9 +307,11 @@ class LongLLMLinguaEngine(CompressionEngine):
             # Chunk prompt
             # ---------------------------------
 
-            chunks = self._chunk_prompt(
-                text,
-                profile,
+            chunks, compress_flags = (
+                self._build_chunks_from_regions(
+                    prompt,
+                    profile,
+                )
             )
 
             # ---------------------------------
@@ -279,14 +323,30 @@ class LongLLMLinguaEngine(CompressionEngine):
                 prompt=prompt,
             )
 
-            ordered_chunks, ordered_scores = self._order_chunks(
-                chunks,
-                scores,
+            paired = sorted(
+                zip(
+                    chunks,
+                    scores,
+                    compress_flags,
+                ),
+                key=lambda item: item[1],
+                reverse=True,
             )
 
-            compress_flags = self._build_compression_flags(
-                ordered_scores,
-            )
+            ordered_chunks = [
+                chunk
+                for chunk, _, _ in paired
+            ]
+
+            ordered_scores = [
+                score
+                for _, score, _ in paired
+            ]
+
+            compress_flags = [
+                flag
+                for _, _, flag in paired
+            ]
 
             # ---------------------------------
             # Build LLMLingua request
