@@ -10,6 +10,7 @@ from models import (
     CompressionConfig,
     PromptData,
 )
+from core.compressor.protected_region_store import ProtectedRegionStore
 from .importance import (
     ImportanceScorer,
     reorder_chunks,
@@ -52,6 +53,8 @@ class LongLLMLinguaEngine(CompressionEngine):
         self._profile_builder = CompressionProfileBuilder()
 
         self._region_classifier = RegionClassifier()
+
+        self._protected_store = ProtectedRegionStore()
 
         # Lazy initialization.
         self._compressor: Any | None = None
@@ -130,36 +133,57 @@ class LongLLMLinguaEngine(CompressionEngine):
         prompt: PromptData,
         profile: CompressionProfile,
     ) -> tuple[list[str], list[bool]]:
-
+    
         regions = self._region_classifier.classify(
             prompt.current_prompt,
         )
-
+    
         chunks: list[str] = []
-
+    
         compress_flags: list[bool] = []
-
+    
+        # Fresh store for every compression request
+        self._protected_store = ProtectedRegionStore()
+    
         for region in regions:
-
-            # Preserve non-compressible regions exactly
+        
+            # ---------------------------------
+            # Preserve protected regions
+            # ---------------------------------
+    
             if not region.compressible:
-
-                chunks.append(region.text)
-                compress_flags.append(False)
+            
+                placeholder = self._protected_store.add(
+                    region.text,
+                )
+    
+                chunks.append(
+                    placeholder,
+                )
+    
+                compress_flags.append(
+                    False,
+                )
+    
                 continue
-
-            # Chunk only normal text
+            
+            # ---------------------------------
+            # Chunk normal text
+            # ---------------------------------
+    
             text_chunks = self._chunk_prompt(
                 region.text,
                 profile,
             )
-
-            chunks.extend(text_chunks)
-
-            compress_flags.extend(
-                [True] * len(text_chunks)
+    
+            chunks.extend(
+                text_chunks,
             )
-
+    
+            compress_flags.extend(
+                [True] * len(text_chunks),
+            )
+    
         return chunks, compress_flags
     
 
@@ -377,6 +401,10 @@ class LongLLMLinguaEngine(CompressionEngine):
             compressed = self._extract_compressed_text(
                 result=result,
                 fallback=text,
+            )
+
+            compressed = self._protected_store.restore(
+                compressed,
             )
 
             # ---------------------------------
